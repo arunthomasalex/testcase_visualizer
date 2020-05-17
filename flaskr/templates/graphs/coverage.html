@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Graph{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<div id='graphDiv' class="canvas"></div>
+<script>
+  const canvas = d3.select('.canvas');
+  const svg = canvas.append('svg')
+    .attr('height', 600)
+    .attr('width', 600);
+  const group = svg.append('g')
+    .attr('transform', 'translate(50, 100)');
+  d3.json("{{ url_for('graph.datas') }}", (data) => {
+    const x = d3.scaleBand()
+      .domain([0, data.map(d => d.High)])
+      .range([0, d3.max(data, d => d.High)])
+      .paddingInner(0.05)
+      .paddingOuter(0.05);
+
+    const y = d3.scaleLinear()
+      .domain([[0, data.map(d => d.Low)]])
+      .range([0, d3.max(data, d => d.Low)]);
+    
+    const rects = group.selectAll('rect').data(data)
+    rects.attr('width', x.bandwidth)
+      .attr('heigth', d => y(d.Low))
+      .attr('fill', 'green')
+      .attr('x', d => x(d.High))
+
+    rects.enter()
+      .append('rect')
+        .attr('width', x.bandwidth)
+        .attr('heigth', d => y(d.Low))
+        .attr('fill', 'green')
+        .attr('x', d => x(d.High));
+    
+  });
+</script>
+{% endblock %}
